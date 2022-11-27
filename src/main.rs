@@ -1,18 +1,17 @@
-use std::io::{stdin, stdout};
+use std::env;
 
-use brainf_ck::interpreter::Interpreter;
-
-const PROGRAM: &str = r#"
-                             Hello world!
->+++++++++[<++++++++>-]<.>+++++++[<++++>-]<+.+++++++..+++.[-]
->++++++++[<++++>-] <.>+++++++++++[<++++++++>-]<-.--------.+++
-.------.--------.[-]>++++++++[<++++>- ]<+.[-]++++++++++.
-"#;
+use brainf_ck::cli::Cli;
 
 fn main() {
-    let mut interpreter = Interpreter::new(stdin(), stdout());
-    if let Err(err) = interpreter.run(PROGRAM) {
-        println!("Failed to run: {:?}", err);
-        return;
+    let args: Vec<String> = env::args().collect();
+    let cli = match Cli::new(args) {
+        Ok(cli) => cli,
+        Err(err) => {
+            println!("{}", err);
+            return;
+        }
     };
+    if let Err(err) = cli.run() {
+        println!("{}", err)
+    }
 }

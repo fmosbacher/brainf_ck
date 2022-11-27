@@ -1,4 +1,7 @@
-use std::io::{Read, Write};
+use std::{
+    fmt::{Display, Formatter},
+    io::{Read, Write},
+};
 
 const MEMORY_SIZE: usize = 30_000;
 
@@ -137,7 +140,6 @@ impl Program {
                         instructions.push(Instruction::Jump(None));
                         continue;
                     };
-
                     let Some(instruction) = instructions.get_mut(lbracket_index) else {
                         // Variable lbracket_index will allways
                         // point to a valid position inside the
@@ -172,4 +174,18 @@ pub enum InterpreterError {
     DataOverflow,
     MissingLeftBracket,
     MissingRightBracket,
+}
+
+impl Display for InterpreterError {
+    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
+        let err_text = match self {
+            Self::IoReadFail => "Failed to read user input",
+            Self::IoWriteFail => "Failed to write data to output",
+            Self::MemoryAddrsOverflow => "Memory address out of boundaries",
+            Self::DataOverflow => "Memory data greater than 255 or less than 0",
+            Self::MissingLeftBracket => "Missing left bracket",
+            Self::MissingRightBracket => "Missing right bracket",
+        };
+        write!(f, "{}", err_text)
+    }
 }
