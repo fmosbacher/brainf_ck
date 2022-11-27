@@ -1,10 +1,12 @@
 use std::io::{Read, Write};
 
+const MEMORY_SIZE: usize = 30_000;
+
 #[derive(Debug)]
 pub struct Interpreter<R: Read, W: Write> {
     program_counter: usize,
     memory_addrs: usize,
-    memory: [u8; 30_000],
+    memory: [u8; MEMORY_SIZE],
     reader: R,
     writer: W,
 }
@@ -14,7 +16,7 @@ impl<R: Read, W: Write> Interpreter<R, W> {
         Self {
             program_counter: 0,
             memory_addrs: 0,
-            memory: [0; 30_000],
+            memory: [0; MEMORY_SIZE],
             reader,
             writer,
         }
@@ -24,9 +26,10 @@ impl<R: Read, W: Write> Interpreter<R, W> {
         let mut program = Program::new(code);
         let result = loop {
             match program.instruction(self.program_counter) {
-                Some(instruction) => self.exec(&instruction)?,
+                Some(instruction) => self.exec(instruction)?,
                 None => break Ok(()),
             }
+            self.program_counter += 1;
         };
         self.reset();
         result
@@ -48,14 +51,12 @@ impl<R: Read, W: Write> Interpreter<R, W> {
             }
             Instruction::Add => {
                 if self.memory[self.memory_addrs] == u8::MAX {
-                    println!("Maior que u8::MAX");
                     return Err(InterpreterError::DataOverflow);
                 }
                 self.memory[self.memory_addrs] += 1;
             }
             Instruction::Sub => {
                 if self.memory[self.memory_addrs] == 0 {
-                    println!("Menor que zero");
                     return Err(InterpreterError::DataOverflow);
                 }
                 self.memory[self.memory_addrs] -= 1;
@@ -85,7 +86,7 @@ impl<R: Read, W: Write> Interpreter<R, W> {
                 let Some(index) = index else {
                     return Err(InterpreterError::MissingLeftBracket);
                 };
-                self.program_counter = *index;
+                self.program_counter = *index - 1;
             }
             Instruction::Noop => {}
         }
@@ -95,7 +96,7 @@ impl<R: Read, W: Write> Interpreter<R, W> {
     fn reset(&mut self) {
         self.program_counter = 0;
         self.memory_addrs = 0;
-        self.memory = [0; 30_000];
+        self.memory = [0; MEMORY_SIZE];
     }
 }
 
@@ -149,7 +150,6 @@ impl Program {
                 _ => instructions.push(Instruction::Noop),
             };
         }
-        instructions.reverse();
         Self(instructions)
     }
 
