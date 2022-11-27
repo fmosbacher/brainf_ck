@@ -1,6 +1,6 @@
 use std::io::{stdin, stdout};
 
-use brainf_ck::Interpreter;
+use brainf_ck::interpreter::Interpreter;
 
 const PROGRAM: &str = r#"
                              Hello world!
